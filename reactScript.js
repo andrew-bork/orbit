@@ -3,6 +3,9 @@
 const e = React.createElement;
 
 var rerenderMain = () => {};
+var findClosest = (point) => {};
+var changePlanetParameters = (pI, pN, pV) => {};
+var getPlanetsInitial = () => { return []; };
 
 class Main extends React.Component {
 
@@ -17,14 +20,90 @@ class Main extends React.Component {
             planets: [
 
             ],
+            planetAnimator: new PlanetAnimator(),
             viewingFrom: -1,
+            selected: -1,
         };
 
         this.calculateOrbits();
+        this.resetPlanetPlayer();
 
         rerenderMain = () => {
-            rerender(this.state.planets, this.state.viewingFrom);
+            rerenderOrbits(this.state.planets, this.state.viewingFrom, this.state.selected);
+            rerenderOverlay(this.state.planets, this.state.viewingFrom);
+            this.state.planetAnimator.rerenderFrame();
         };
+
+        findClosest = (point) => { return this.findClosest(point); };
+        changePlanetParameters = (pI, pN, pV) => { this.planetParameterChange(pI, pN, pV); };
+        getPlanetsInitial = () => { return this.state.planetsInitial; };
+    }
+
+    findClosest(point) {
+
+        var min = 10;
+        var type = "";
+        var closest = -1;
+
+        if (this.state.viewingFrom != -1) {
+
+            const b = this.state.planetsInitial[this.state.viewingFrom].pi;
+            const c = this.state.planetsInitial[this.state.viewingFrom].vi;
+            this.state.planetsInitial.forEach(
+                (planet, i) => {
+                    const a = sub(planet.pi, b);
+                    //const z = map(a);
+                    const d = map(add(a, sca(sub(planet.vi, c), velocityScaleUp)));
+                    const e = magnitude2(sub2(d, point));
+                    const g = magnitude2(sub2(map(a), point));
+
+                    if (e < min) {
+                        min = e;
+                        closest = i;
+                        type = "velocity";
+                    }
+
+                    if (g < min) {
+                        min = g;
+                        closest = i;
+                        type = "position";
+                    }
+                }
+            );
+
+            rerenderOverlay(this.state.planets, this.state.viewingFrom, closest);
+            //rerenderPlanets(this.state.planets, this.state.viewingFrom);
+            return { type: type, closest: closest, relPos: b, relVel: c };
+        } else {
+            this.state.planetsInitial.forEach(
+                (planet, i) => {
+                    const a = planet.pi;
+                    //const z = map(a);
+                    const d = map(add(a, sca(planet.vi, velocityScaleUp)));
+                    const e = magnitude2(sub2(d, point));
+                    const g = magnitude2(sub2(map(a), point));
+
+                    if (e < min) {
+                        min = e;
+                        closest = i;
+                        type = "velocity";
+                    }
+
+                    if (g < min) {
+                        min = g;
+                        closest = i;
+                        type = "position";
+                    }
+                }
+            );
+
+            rerenderOverlay(this.state.planets, this.state.viewingFrom, closest);
+            this.state.planetAnimator.rerenderFrame();
+            //rerenderPlanets(this.state.planets, this.state.viewingFrom);
+
+            return { type: type, closest: closest, relPos: { x: 0, y: 0, z: 0 }, relVel: { x: 0, y: 0, z: 0 } };
+        }
+
     }
 
     render() {
@@ -43,6 +122,12 @@ class Main extends React.Component {
             },
             deletePlanet: (i) => {
                 this.deletePlanet(i);
+            },
+            changeSelected: (i) => {
+                this.changeSelected(i);
+            },
+            togglePlanetPlayer: (i) => {
+                this.togglePlanetPlayer();
             }
         }));
     }
@@ -51,8 +136,11 @@ class Main extends React.Component {
         var a = this.state.planetsInitial;
         a[planetIndex][planetParameter] = planetValue;
         this.setState({ planetsInitial: a });
+        if (planetParameter == "color" || planetParameter == "") {
 
-        this.calculateOrbits();
+        } else {
+            this.calculateOrbits();
+        }
     }
 
     calculateOrbits() {
@@ -60,15 +148,22 @@ class Main extends React.Component {
         if (currentCalculation) {
             clearInterval(currentCalculation);
         }
+        rerenderOverlay(planets, this.state.viewingFrom);
+        //rerenderPlanets(planets, this.state.viewingFrom);
+        this.resetPlanetPlayer();
+        this.state.planetAnimator.rerenderFrame();
         calculateOrbits(planets, (out) => {
-            rerender(out.planets, this.state.viewingFrom);
+            rerenderOrbits(out.planets, this.state.viewingFrom, this.state.selected);
             this.setState({ planets: out.planets });
         });
     }
 
     viewFrom(index) {
         this.setState({ viewingFrom: index });
-        rerender(this.state.planets, index);
+        rerenderOrbits(this.state.planets, index);
+        rerenderOverlay(this.state.planets, index);
+        this.state.planetAnimator.centerOn(index);
+        this.state.planetAnimator.rerenderFrame();
     }
 
     createPlanet() {
@@ -82,6 +177,51 @@ class Main extends React.Component {
         this.setState({ planetsInitial: this.state.planetsInitial });
         this.calculateOrbits();
     }
+
+    changeSelected(index) {
+        this.setState({ selected: index });
+        rerenderOrbits(this.state.planets, this.state.viewingFrom, index);
+    }
+
+    resetPlanetPlayer() {
+        var planets = this.state.planetsInitial.map((planet) => { return new Planet(planet.mass, planet.pi, planet.vi, planet.name, planet.color) });
+        this.state.planetAnimator.setPlanets(planets);
+    }
+
+    togglePlanetPlayer() {
+        this.state.planetAnimator.toggle();
+    }
+}
+
+class SelectComponent extends React.Component {
+    constructor(props) {
+        super(props);
+        console.log(this.props);
+    }
+
+    createOption(optionName, optionValue, index) {
+        return e("option", {
+            value: optionValue,
+            key: index
+        }, optionName);
+    }
+
+    render() {
+
+        var options = this.props.options.map((option, i) => {
+            return this.createOption(option.name, option.value, i);
+        });
+
+        return e("select", {
+                onChange: (e) => {
+                    if (e.target.options[e.target.selectedIndex]) {
+                        this.props.onChange(e.target.options[e.target.selectedIndex].value);
+                    }
+                }
+            },
+            options
+        );
+    }
 }
 
 class PlanetList extends React.Component {
@@ -94,17 +234,32 @@ class PlanetList extends React.Component {
                 key: i,
                 className: "planet-element",
                 onMouseEnter: () => {
-
+                    this.props.changeSelected(i);
                 },
-                onMouseExit: () => {
-
+                onMouseLeave: () => {
+                    this.props.changeSelected(-1);
                 }
             },
             e("div", {
-                style: {
-                    backgroundColor: planet.color
-                }
-            }, ),
+                    style: {
+                        backgroundColor: planet.color,
+                        display: "flex",
+                        justifyContent: "stretch",
+                        alignItems: "flex-end",
+                    }
+                },
+                e("input", {
+                    defaultValue: planet.color,
+                    style: {
+                        width: "7em",
+                        backgroundColor: "#00000000",
+                        outline: "none",
+                        border: "none",
+                    },
+                    onChange: (e) => {
+                        this.props.planetParameterChange(i, "color", e.target.value);
+                    }
+                })),
             e("div", {},
                 e("div", {
                         style: {
@@ -202,7 +357,16 @@ class PlanetList extends React.Component {
                             this.props.planetParameterChange(i, "pi", planet.pi);
                         }
                     }),
-                    `)`),
+                    `)`,
+                    e("span", {
+                        style: { marginLeft: "10px" },
+                        onClick: (e) => {
+                            graphwindow.centerX = planet.pi.x;
+                            graphwindow.centerY = planet.pi.z;
+                            rerenderMain();
+                        }
+                    }, "Travel to"),
+                ),
                 e("div", {
                         className: "subtitle"
                     },

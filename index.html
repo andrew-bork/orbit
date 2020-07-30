@@ -2,6 +2,15 @@
 <html>
 
 <head>
+
+    <title>Orbit Creator | Bork</title>
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Orbit Creator" />
+    <meta property="og:description" content="A website to play with planet orbits." />
+    <meta property="og:url" content="https://andrew-bork.github.io/orbit/" />
+    <meta property="og:image" content="https://andrew-bork.github.io/orbit/thumbnail.png" />
+
     <link rel="stylesheet" href="style.css">
 
     <link href="https://fonts.googleapis.com/css2?family=Bungee+Hairline&family=Spartan:wght@100;400&display=swap" rel="stylesheet">
@@ -14,7 +23,9 @@
     <div id="fucking-stuff">
         <div width="900px" height="900px">
             <canvas id="background" style="position:absolute;top:0;left:0;"></canvas>
-            <canvas id="canvas" style="position:absolute;top:0;left:0;" onmousemove="onMouseMove"></canvas>
+            <canvas id="canvas" style="position:absolute;top:0;left:0;"></canvas>
+            <canvas id="planets" style="position:absolute;top:0;left:0;"></canvas>
+            <canvas id="overlay" style="position:absolute;top:0;left:0;"></canvas>
         </div>
         <div id="root"></div>
     </div>
