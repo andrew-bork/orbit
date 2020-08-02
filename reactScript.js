@@ -14,8 +14,8 @@ class Main extends React.Component {
 
         this.state = {
             planetsInitial: [
-                { mass: 3000, pi: { x: 0, y: 0, z: 0 }, vi: { x: 0, y: 0, z: 0 }, name: "Sun", color: "#e6f74a" },
-                { mass: 600, pi: { x: -1284, y: 0, z: 0 }, vi: { x: 0, y: 0, z: 1 }, name: "Big Blue", color: "#48fae5" }
+                { mass: 3000, pi: { x: 0, y: 0, z: 0 }, vi: { x: 0, y: 0, z: 0 }, name: "Sun", color: "#e6f74a", radius: 8 },
+                { mass: 600, pi: { x: -1284, y: 0, z: 0 }, vi: { x: 0, y: 0, z: 1 }, name: "Big Blue", color: "#48fae5", radius: 4 }
             ],
             planets: [
 
@@ -137,17 +137,24 @@ class Main extends React.Component {
         a[planetIndex][planetParameter] = planetValue;
         this.setState({ planetsInitial: a });
         if (planetParameter == "color" || planetParameter == "") {
-
+            this.state.planets[planetIndex][planetParameter] = this.state.planetAnimator.planets[planetIndex][planetParameter] = planetValue;
+            rerenderOrbits(this.state.planets, this.state.viewingFrom, this.state.selected);
+            this.state.planetAnimator.rerenderFrame();
         } else {
             this.calculateOrbits();
         }
     }
 
     calculateOrbits() {
-        var planets = this.state.planetsInitial.map((planet) => { return new Planet(planet.mass, planet.pi, planet.vi, planet.name, planet.color) });
+        var planets = this.state.planetsInitial.map((planet) => { return new Planet(planet.mass, planet.pi, planet.vi, planet.name, planet.color, planet.radius); });
         if (currentCalculation) {
             clearInterval(currentCalculation);
         }
+        planets.sort(
+            (a, b) => {
+                return a.radius - b.radius;
+            }
+        );
         rerenderOverlay(planets, this.state.viewingFrom);
         //rerenderPlanets(planets, this.state.viewingFrom);
         this.resetPlanetPlayer();
@@ -184,7 +191,7 @@ class Main extends React.Component {
     }
 
     resetPlanetPlayer() {
-        var planets = this.state.planetsInitial.map((planet) => { return new Planet(planet.mass, planet.pi, planet.vi, planet.name, planet.color) });
+        var planets = this.state.planetsInitial.map((planet) => { return new Planet(planet.mass, planet.pi, planet.vi, planet.name, planet.color, planet.radius); });
         this.state.planetAnimator.setPlanets(planets);
     }
 
@@ -249,7 +256,7 @@ class PlanetList extends React.Component {
                     }
                 },
                 e("input", {
-                    defaultValue: planet.color,
+                    value: planet.color,
                     style: {
                         width: "7em",
                         backgroundColor: "#00000000",
@@ -269,7 +276,10 @@ class PlanetList extends React.Component {
                         },
                     }, e("input", {
                         className: "title name-input",
-                        defaultValue: planet.name,
+                        value: planet.name,
+                        onChange: (e) => {
+                            this.props.planetParameterChange(i, "name", e.target.value);
+                        }
                     }),
                     e("div", {
                             style: {
@@ -320,43 +330,21 @@ class PlanetList extends React.Component {
                     className: "subtitle"
                 }, "Mass: ", e("input", {
                     className: "number-input",
-                    defaultValue: planet.mass,
+                    type: "number",
+                    value: planet.mass,
                     onChange: (e) => {
-                        this.props.planetParameterChange(i, "mass", parseFloat(e.target.value));
+                        var input = parseFloat(e.target.value);
+                        this.props.planetParameterChange(i, "mass", input);
                     }
                 })),
                 e("div", {
                         className: "subtitle"
                     }, `Initial Position: (x: `,
-                    e("input", {
-                        className: "number-input",
-                        defaultValue: planet.pi.x,
-                        onChange: (e) => {
-                            var val = e.target.value;
-                            planet.pi.x = parseFloat(val);
-                            this.props.planetParameterChange(i, "pi", planet.pi);
-                        }
-                    }),
+                    planet.pi.x,
                     `, y: `,
-                    e("input", {
-                        className: "number-input",
-                        defaultValue: planet.pi.y,
-                        onChange: (e) => {
-                            var val = e.target.value;
-                            planet.pi.y = parseFloat(val);
-                            this.props.planetParameterChange(i, "pi", planet.pi);
-                        }
-                    }),
+                    planet.pi.y,
                     `, z: `,
-                    e("input", {
-                        className: "number-input",
-                        defaultValue: planet.pi.z,
-                        onChange: (e) => {
-                            var val = e.target.value;
-                            planet.pi.z = parseFloat(val);
-                            this.props.planetParameterChange(i, "pi", planet.pi);
-                        }
-                    }),
+                    planet.pi.z,
                     `)`,
                     e("span", {
                         style: { marginLeft: "10px" },
@@ -371,35 +359,11 @@ class PlanetList extends React.Component {
                         className: "subtitle"
                     },
                     `Initial Velocity: (x: `,
-                    e("input", {
-                        className: "number-input",
-                        defaultValue: planet.vi.x,
-                        onChange: (e) => {
-                            var val = e.target.value;
-                            planet.vi.x = parseFloat(val);
-                            this.props.planetParameterChange(i, "vi", planet.vi);
-                        }
-                    }),
+                    planet.vi.x,
                     `, y: `,
-                    e("input", {
-                        className: "number-input",
-                        defaultValue: planet.vi.y,
-                        onChange: (e) => {
-                            var val = e.target.value;
-                            planet.vi.y = parseFloat(val);
-                            this.props.planetParameterChange(i, "vi", planet.vi);
-                        }
-                    }),
+                    planet.vi.y,
                     `, z: `,
-                    e("input", {
-                        className: "number-input",
-                        defaultValue: planet.vi.z,
-                        onChange: (e) => {
-                            var val = e.target.value;
-                            planet.vi.z = parseFloat(val);
-                            this.props.planetParameterChange(i, "vi", planet.vi);
-                        }
-                    }),
+                    planet.vi.z,
                     `)`),
             )
         );
@@ -418,6 +382,50 @@ class PlanetList extends React.Component {
             e("li", {
                 className: "title"
             }, "Planet List"),
+            e("br"),
+            e("li", {
+
+            }, "Render Settings"),
+            e("li", {
+                    style: {
+                        marginLeft: "40px"
+                    }
+                }, "Orbit step size: ",
+                e("input", {
+                    className: "number-input",
+                    type: "number",
+                    value: RenderSettings.orbitStepSize,
+                    onChange: (e) => {
+                        var val = parseInt(e.target.value);
+                        RenderSettings.orbitStepSize = val > 0 ? val : 1;
+                        rerenderMain();
+                        this.setState({ x: 1 });
+                    }
+                }),
+                e("br"),
+                "Render Text: ",
+                e("input", {
+                    type: "checkbox",
+                    checked: RenderSettings.renderText,
+                    onChange: (e) => {
+                        RenderSettings.renderText = !RenderSettings.renderText;
+                        rerenderMain();
+                        this.setState({ x: 1 });
+                    }
+                }),
+                e("br"),
+                "Render Detailed Text: ",
+                e("input", {
+                    type: "checkbox",
+                    checked: RenderSettings.renderDetailedText,
+                    onChange: (e) => {
+                        RenderSettings.renderDetailedText = !RenderSettings.renderDetailedText;
+                        rerenderMain();
+                        this.setState({ x: 1 });
+                    }
+                }),
+            ),
+            e("br"),
             e("li", {},
                 e("span", {}, "Global View: "),
                 e("input", {
@@ -504,6 +512,7 @@ function generateRandomPlanet() {
         vi: randomVector(-5, 5, -5, 5, -5, 5),
         name: randomPlanetName(),
         color: randomColor(),
+        radius: Math.random() * 200,
     };
 }
 
