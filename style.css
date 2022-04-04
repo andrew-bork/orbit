@@ -119,7 +119,7 @@ li {
     margin:10px;
 }
 
-@media (max-width: 1500px) {
+@media (max-width: 1500px) and (min-width: 850px) {
 
     #root {
         width: 300px;
