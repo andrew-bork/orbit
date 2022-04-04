@@ -1,0 +1,199 @@
+#root {
+    position: absolute;
+    right: 0px;
+    top: 0px;
+    background-color: #f0f0f0;
+    width: 600px;
+    height: 100%;
+    padding: 10px;
+    overflow-y: auto;
+    transition: width .3s, right .3s;
+}
+
+ul {
+    list-style: none;
+    padding: 0px;
+}
+
+.title {
+    font-family: 'Bungee Hairline', cursive;
+    font-size: 50px;
+    margin: 10px;
+    transition: font-size .3s;
+}
+
+.subtitle {
+    padding: 5px;
+    margin: 10px;
+}
+
+* {
+    font-family: "Spartan", sans-serif;
+    box-sizing: border-box;
+}
+
+.planet-element {
+    display: grid;
+    grid-template-columns: 20% 80%;
+    grid-template-rows: 100%;
+    position: relative;
+}
+
+.number-input {
+    /* width: calc(100% - 30px); */
+    width: 5em;
+}
+
+.name-input {
+    background-color: #00000000;
+    border: none;
+    outline: none;
+    width: 8em;
+    transition: width .3s;
+}
+
+html, body, #fucking-stuff {
+    overflow: hidden;
+    overflow-x: hidden;
+    width: 100%;
+    position: relative;
+    height:100%;
+    margin: 0;
+    padding: 0;
+}
+html {
+    position: relative;
+}
+
+body{
+    background-color: rgb(22, 22, 22);
+    /* position: relative; */
+}
+
+.hoverable {
+    background-color: #00000000;
+    transition: all .3s;
+}
+
+.hoverable:hover {
+    background-color: #00000022;
+}
+
+li {
+    margin: 5px 5px;
+}
+
+.planet-view-select {
+
+}
+
+.planet-list{
+    width:100%;
+}
+
+.disable-1200 {
+    /* overflow: hidden; */
+    /* left: 0; */
+    /* transition: left .3s; */
+    display: inline-block;
+}
+.text-short{
+    display: none;
+}
+.text-long{
+    display: inline;
+}
+
+#tips {
+    user-select: none;
+    pointer-events: none;
+}
+
+.icon-wrap {
+    display: flex;
+    justify-content: stretch;
+    align-items: center;
+    border-radius: 100%;
+    background-color: #f0f0f0;
+    padding:4px;
+    margin:10px;
+}
+
+@media (max-width: 1500px) {
+
+    #root {
+        width: 300px;
+
+    }
+    .title {
+        font-family: 'Bungee Hairline', cursive;
+        font-size: 40px;
+        margin: 0px 0px;
+        padding: 0px;
+    }
+
+    .disable-1200 {
+        /* visibility: hidden; */
+        display: none;
+        /* left: 100% */
+    }
+
+    
+    .planet-element {
+        /* display: grid; */
+        grid-template-columns: 65px auto;
+        /* grid-template-rows: 100%; */
+        width:100%;
+    }
+
+
+    .planet-view-select {
+        content: "View from here: ";
+    }
+
+    .text-long{
+        display: none;
+    }
+    .text-short{
+        display: inline;
+    }
+
+    .name-input {
+        width: 3em;
+    }
+
+    
+    
+    #tips {
+        font-size: 10px;
+    }
+}
+
+
+.show-800 {
+    display: none;
+}
+
+#penis {
+    display: grid;
+    grid-template-columns: auto 0px;
+}
+
+@media (max-width: 850px) {
+
+    #penis {
+        display: grid;
+        grid-template-columns: auto 40px;
+    }
+    #root {
+        width: 100%;
+        right: -100%;
+    }
+    #root.show{
+        right:0%;
+    }
+
+    .show-800 {
+        display: flex;
+    }
+}
