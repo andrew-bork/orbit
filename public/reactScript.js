@@ -51,6 +51,7 @@ class Main extends React.Component {
             const c = this.state.planetsInitial[this.state.viewingFrom].vi;
             this.state.planetsInitial.forEach(
                 (planet, i) => {
+                    if(i == this.state.viewingFrom) return;
                     const a = sub(planet.pi, b);
                     //const z = map(a);
                     const d = map(add(a, sca(sub(planet.vi, c), velocityScaleUp)));
@@ -73,10 +74,15 @@ class Main extends React.Component {
 
             rerenderOverlay(this.state.planets, this.state.viewingFrom, closest);
             //rerenderPlanets(this.state.planets, this.state.viewingFrom);
+            // if(closest != -1){
+            //     console.log(this.state.planets);
+            //     console.log(this.state.planets[closest].name);
+            // }
             return { type: type, closest: closest, relPos: b, relVel: c };
         } else {
             this.state.planetsInitial.forEach(
                 (planet, i) => {
+                    if(i == this.state.viewingFrom) return;
                     const a = planet.pi;
                     //const z = map(a);
                     const d = map(add(a, sca(planet.vi, velocityScaleUp)));
@@ -100,6 +106,10 @@ class Main extends React.Component {
             rerenderOverlay(this.state.planets, this.state.viewingFrom, closest);
             this.state.planetAnimator.rerenderFrame();
             //rerenderPlanets(this.state.planets, this.state.viewingFrom);
+            // if(closest != -1){
+            //     console.log(this.state.planets);
+            //     console.log(this.state.planets[closest].name);
+            // }
 
             return { type: type, closest: closest, relPos: { x: 0, y: 0, z: 0 }, relVel: { x: 0, y: 0, z: 0 } };
         }
@@ -150,11 +160,11 @@ class Main extends React.Component {
         if (currentCalculation) {
             clearInterval(currentCalculation);
         }
-        planets.sort(
-            (a, b) => {
-                return a.radius - b.radius;
-            }
-        );
+        // planets.sort(
+        //     (a, b) => {
+        //         return a.radius - b.radius;
+        //     }
+        // );
         rerenderOverlay(planets, this.state.viewingFrom);
         //rerenderPlanets(planets, this.state.viewingFrom);
         this.resetPlanetPlayer();
@@ -231,6 +241,22 @@ class SelectComponent extends React.Component {
     }
 }
 
+function AbbreviatedText (long, short){
+    return new React.Fragment;
+    /*e("span", {
+                        style: {
+                            margin: "5px"
+                        },
+                        className: "text-long",
+                    }, "View from this planet: "),
+                    e("span", {
+                        style: {
+                            margin: "5px"
+                        },
+                        className: "text-short",
+                    }, "View from this planet: ")*/
+}
+
 class PlanetList extends React.Component {
     constructor(props) {
         super(props);
@@ -267,12 +293,19 @@ class PlanetList extends React.Component {
                         this.props.planetParameterChange(i, "color", e.target.value);
                     }
                 })),
-            e("div", {},
+            e("div", {
+                style: {
+                    width: "100%",
+                    position: "relative",
+                }
+            },
                 e("div", {
                         style: {
                             display: "grid",
                             gridTemplateRows: "100%",
                             gridTemplateColumns: "auto 30px",
+                            width: "100%",
+                            position: "relative",
                         },
                     }, e("input", {
                         className: "title name-input",
@@ -315,9 +348,16 @@ class PlanetList extends React.Component {
                     e("span", {
                         style: {
                             margin: "5px"
-                        }
+                        },
+                        className: "text-long",
                     }, "View from this planet: "),
-                    e("input", {
+                    e("span", {
+                        style: {
+                            margin: "5px"
+                        },
+                        className: "text-short",
+                    }, "View from this planet: "),
+                        e("input", {
                         type: "radio",
                         name: "lock-to-center",
                         value: i,
@@ -327,7 +367,7 @@ class PlanetList extends React.Component {
                     })),
                 e("br"),
                 e("div", {
-                    className: "subtitle"
+                    style: { marginLeft: "10px" },
                 }, "Mass: ", e("input", {
                     className: "number-input",
                     type: "number",
@@ -338,33 +378,34 @@ class PlanetList extends React.Component {
                     }
                 })),
                 e("div", {
-                        className: "subtitle"
+                        className: "subtitle disable-1200"
                     }, `Initial Position: (x: `,
-                    planet.pi.x,
+                    round(planet.pi.x),
                     `, y: `,
-                    planet.pi.y,
+                    round(planet.pi.y),
                     `, z: `,
-                    planet.pi.z,
+                    round(planet.pi.z),
                     `)`,
-                    e("span", {
-                        style: { marginLeft: "10px" },
-                        onClick: (e) => {
-                            graphwindow.centerX = planet.pi.x;
-                            graphwindow.centerY = planet.pi.z;
-                            rerenderMain();
-                        }
-                    }, "Travel to"),
                 ),
                 e("div", {
-                        className: "subtitle"
+                        className: "subtitle disable-1200"
                     },
                     `Initial Velocity: (x: `,
-                    planet.vi.x,
+                    round(planet.vi.x),
                     `, y: `,
-                    planet.vi.y,
+                    round(planet.vi.y),
                     `, z: `,
-                    planet.vi.z,
+                    round(planet.vi.z),
                     `)`),
+                e("br"),
+                e("div", {
+                    style: { marginLeft: "10px" },
+                    onClick: (e) => {
+                        graphwindow.centerX = planet.pi.x;
+                        graphwindow.centerY = planet.pi.z;
+                        rerenderMain();
+                    }
+                }, "Travel to"),
             )
         );
     }
@@ -378,7 +419,9 @@ class PlanetList extends React.Component {
             elements.push(e("hr", { key: "a" + i }));
         });
 
-        return e("ul", {},
+        return e("ul", {
+            className: "planet-list"
+        },
             e("li", {
                 className: "title"
             }, "Planet List"),
@@ -474,7 +517,7 @@ function randomVector(minX, maxX, minY, maxY, minZ, maxZ) {
     return {
         x: (maxX - minX) * Math.random() + minX,
         y: (maxY - minY) * Math.random() + minY,
-        z: (maxZ - minZ) * Math.random() + minZ,
+        z: /* (maxZ - minZ) * Math.random() + minZ */ 0,
     };
 }
 

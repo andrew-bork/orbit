@@ -14,8 +14,8 @@ var overlayCanvas = document.getElementById("overlay");
 var overlayCtx = overlayCanvas.getContext("2d");
 
 var RenderSettings = {
-    renderDetailedText: true,
-    renderText: true,
+    renderDetailedText: false,
+    renderText: false,
     orbitStepSize: 1,
 };
 
@@ -25,23 +25,22 @@ var SimulationSettings = {
     batchSize: 100,
 };
 
-canvas.width = 900;
-canvas.height = 900;
 
-starCanvas.width = 900;
-starCanvas.height = 900;
+var width;
+var height;
 
-overlayCanvas.width = 900;
-overlayCanvas.height = 900;
+function resize(w, h){
+    canvas.width = starCanvas.width = overlayCanvas.width = planetsCanvas.width = width = w;
+    canvas.height = starCanvas.height = overlayCanvas.height = planetsCanvas.height = height = h;
+}
 
-planetsCanvas.width = 900;
-planetsCanvas.height = 900;
+resize(window.innerWidth, window.innerHeight);
 
 
 
 starCtx.fillStyle = "#FFFFFF";
-for (var i = 0; i < 900; i++) {
-    for (var j = 0; j < 900; j++) {
+for (var i = 0; i < width; i++) {
+    for (var j = 0; j < height; j++) {
         if (Math.random() < 0.001) {
             starCtx.fillRect(i, j, 1, 1);
         }
@@ -54,6 +53,12 @@ var graphwindow = {
     scaleX: 2000,
     scaleY: 2000,
 };
+
+function updateAspectRatio(){
+    graphwindow.scaleY = graphwindow.scaleX * height / width;
+}
+
+updateAspectRatio();
 
 var map = (p) => {
     return {
@@ -213,7 +218,7 @@ async function orbitCalculator(planets) {
 
 
 function rerenderOrbits(planets, centeredOn, bolded = -1) {
-    ctx.clearRect(0, 0, 900, 900);
+    ctx.clearRect(0, 0, width, height);
     if (centeredOn != -1) {
         planets.forEach((planet, j) => {
             ctx.beginPath();
@@ -242,7 +247,7 @@ function rerenderOrbits(planets, centeredOn, bolded = -1) {
 }
 
 function rerenderPlanets(planets, centeredOn = -1) {
-    planetsCtx.clearRect(0, 0, 900, 900);
+    planetsCtx.clearRect(0, 0, width, height);
 
     const scaX = scaleX();
     const scaY = scaleY();
@@ -268,7 +273,7 @@ function rerenderPlanets(planets, centeredOn = -1) {
 }
 
 function rerenderInitialPlanets(planets, centeredOn = -1) {
-    planetsCtx.clearRect(0, 0, 900, 900);
+    planetsCtx.clearRect(0, 0, width, height);
 
     const scaX = scaleX();
     const scaY = scaleY();
@@ -296,7 +301,7 @@ function rerenderInitialPlanets(planets, centeredOn = -1) {
 var velocityScaleUp = 100;
 
 function rerenderOverlay(planets, centeredOn = -1, bolded = -1) {
-    overlayCtx.clearRect(0, 0, 900, 900);
+    overlayCtx.clearRect(0, 0, width, height);
 
     const scaX = scaleX();
     const scaY = scaleY();
@@ -546,9 +551,10 @@ overlayCanvas.addEventListener("mouseup", (e) => {
 overlayCanvas.addEventListener("mousemove", onMouseMove);
 overlayCanvas.addEventListener("wheel", (e) => {
     graphwindow.scaleX += e.deltaY;
-    graphwindow.scaleY += e.deltaY;
+    // graphwindow.scaleY += e.deltaY;
     graphwindow.scaleX = Math.max(0.1, graphwindow.scaleX);
-    graphwindow.scaleY = Math.max(0.1, graphwindow.scaleY);
+    // graphwindow.scaleY = Math.max(0.1, graphwindow.scaleY);
+    updateAspectRatio();
     rerenderMain();
     e.preventDefault();
 });
