@@ -23,8 +23,9 @@ ul {
 }
 
 .subtitle {
-    padding: 5px;
-    margin: 10px;
+    /* padding: 5px; */
+    /* margin: 10px; */
+    font-size: 18px;
 }
 
 * {
